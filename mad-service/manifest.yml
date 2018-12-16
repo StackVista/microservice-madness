@@ -1,0 +1,8 @@
+---
+applications:
+- name: mad-service
+  memory: 256M
+  instances: 1
+  host: rest-service
+  domain: com.stackstate.mm
+  path: build/libs/mad-service-0.1.0.jar

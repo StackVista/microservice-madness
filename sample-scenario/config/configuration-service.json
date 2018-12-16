@@ -1,0 +1,13 @@
+{ "services": [
+    {
+      "service": "mad-1",
+      "failureMode": "TRANSIENT_SLOWDOWN",
+      "failureModeParam": "0.10"
+    },
+    {
+      "service": "mad-2",
+      "failureMode": "GRADUAL_SLOWDOWN",
+      "failureModeParam": "0.001"
+    }
+  ]
+}

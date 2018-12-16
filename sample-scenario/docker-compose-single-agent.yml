@@ -1,0 +1,66 @@
+version: '3'
+
+# networks:
+#   mm-net:
+
+services:
+  # Microservices
+  mad-1:
+    image: "mad-service:latest"
+    environment:
+      SERVICE: mad-1
+      CONFIGURATION_SERVICE_URL: http://config:8080
+      DEPENDENCIES: mad-2:8080|0.75,mad-3:8080|0.25
+      LATENCY: 5000
+      ERROR_RATE: 0.01
+    # NOTE: only entrypoint exposes port
+    ports:
+      - "8080:8080"
+    links:
+      - mad-2
+  mad-2:
+    image: "mad-service:latest"
+    environment:
+      SERVICE: mad-2
+      CONFIGURATION_SERVICE_URL: http://config:8080
+      LATENCY: 5000
+      ERROR_RATE: 0.00
+    ports:
+      - "8081:8080"
+  mad-3:
+    image: "mad-service:latest"
+    environment:
+      SERVICE: mad-3
+      CONFIGURATION_SERVICE_URL: http://config:8080
+      LATENCY: 2000
+      ERROR_RATE: 0.01
+    ports:
+      - "8082:8080"
+
+
+
+
+  # Infrastructure
+  config:
+    image: "config-service:latest"
+  load-generator:
+    image: "load-generator:latest"
+    environment:
+      TAGS: mm,load-generator
+      SIEGE_DELAY: 60 # sleep format, seconds
+      SIEGE_DURATION: 1M # siege format, minutes
+    depends_on:
+      - mad-1
+      - mad-2
+    links:
+      - "mad-1:entry-1"
+  sts-agent:
+    image: "sts-agent:latest"
+    privileged: true
+    environment:
+      TAGS: mm,sts-agent
+      # NOTE: STS_URL must be escaped for inclusion on the command line
+      #STS_URL: http:\/\/champagne.stackstate.io:7077\/stsAgent\/
+      STS_URL: http:\/\/192.168.2.175:7077\/stsAgent\/
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
